@@ -37,6 +37,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
       <button data-tab="dashboard">⌂ &nbsp; Dashboard</button>
       <button data-tab="bills">▣ &nbsp; Bills</button>
       <button data-tab="payments">↗ &nbsp; Payments</button>
+      <button data-tab="expenses">💸 &nbsp; Daily Expenses</button>
       <button data-tab="income">₹ &nbsp; Income</button>
       <button data-tab="cards">▤ &nbsp; Credit Cards</button>
       <button data-tab="emi">▥ &nbsp; EMIs</button>
@@ -80,6 +81,12 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
         <div id="paymentsTable"></div>
       </div></section>
 
+      <section id="tab-expenses" class="section"><div class="card">
+        <div class="toolbar"><div><h2>Daily Expenses</h2><span class="muted">Track every day-wise expense</span></div><button class="btn" onclick="openForm('expense')">+ Add Expense</button></div>
+        <div class="grid" style="margin-bottom:14px"><div class="card"><div class="metric-label">Today</div><div class="metric" id="eToday">₹0</div></div><div class="card"><div class="metric-label">This month</div><div class="metric" id="eMonth">₹0</div></div></div>
+        <div id="expensesTable"></div>
+      </div></section>
+
       <section id="tab-income" class="section"><div class="card">
         <div class="toolbar"><div><h2>Income</h2><span class="muted">Salary and other income</span></div><button class="btn" onclick="openForm('income')">+ Add Income</button></div>
         <div id="incomeTable"></div>
@@ -106,6 +113,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
           <div class="card"><div class="metric-label">Total bills</div><div class="metric" id="rBills">₹0</div></div>
           <div class="card"><div class="metric-label">Total paid</div><div class="metric" id="rPaid">₹0</div></div>
           <div class="card"><div class="metric-label">Outstanding</div><div class="metric" id="rOutstanding">₹0</div></div>
+          <div class="card"><div class="metric-label">Daily expenses</div><div class="metric" id="rExpenses">₹0</div></div>
         </div>
         <div style="height:14px"></div>
         <div class="twocol"><div class="card"><div class="toolbar"><h3>Spending by category</h3><button class="btn secondary small" onclick="exportReportsExcel()">⬇ Excel</button></div><div id="categoryReport"></div></div><div class="card"><div class="toolbar"><h3>Bill status</h3></div><div id="statusReport"></div></div></div>
@@ -122,7 +130,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 <nav class="mobile-nav" id="mobileNav">
   <button data-tab="dashboard"><span>⌂</span>Home</button>
   <button data-tab="bills"><span>▣</span>Bills</button>
-  <button data-tab="payments"><span>↗</span>Money</button>
+  <button data-tab="expenses"><span>💸</span>Expenses</button>
   <button data-tab="calendar"><span>▦</span>Calendar</button>
   <button data-tab="reports"><span>◔</span>Reports</button>
 </nav>
@@ -141,7 +149,7 @@ const dateFmt=v=>v?new Date(v+"T00:00:00").toLocaleDateString("en-IN",{day:"2-di
 const isoToday=()=>new Date().toISOString().slice(0,10);
 const ym=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
 const monthName=d=>d.toLocaleDateString("en-IN",{month:"long",year:"numeric"});
-let client,user,data={bills:[],payments:[],income:[],cards:[],emi:[],reminders:[]},activeTab="dashboard",calDate=new Date(),editing=null;
+let client,user,data={bills:[],payments:[],income:[],expenses:[],cards:[],emi:[],reminders:[]},activeTab="dashboard",calDate=new Date(),editing=null;
 
 const schemas={
  bill:{title:"Bill",table:"bills",key:"bills",fields:[
@@ -177,7 +185,7 @@ function go(tab){
  activeTab=tab;
  document.querySelectorAll(".section").forEach(s=>s.classList.toggle("active",s.id==="tab-"+tab));
  document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));
- const titles={dashboard:"Dashboard",bills:"Bills",payments:"Payments",income:"Income",cards:"Credit Cards",emi:"EMIs",calendar:"Calendar",reports:"Reports",reminders:"Reminders"};
+ const titles={dashboard:"Dashboard",bills:"Bills",payments:"Payments",expenses:"Daily Expenses",income:"Income",cards:"Credit Cards",emi:"EMIs",calendar:"Calendar",reports:"Reports",reminders:"Reminders"};
  $("pageTitle").textContent=titles[tab]||"Dashboard";
  if(tab==="calendar")renderCalendar();
 }
@@ -214,7 +222,7 @@ async function load(table,key){
  const {data:d,error}=await client.from(table).select("*").order("created_at",{ascending:false});
  if(error)throw error;data[key]=d||[];
 }
-async function loadAll(){await Promise.all([load("bills","bills"),load("payments","payments"),load("income","income"),load("credit_cards","cards"),load("emi_details","emi"),load("reminders","reminders")]);renderAll()}
+async function loadAll(){await Promise.all([load("bills","bills"),load("payments","payments"),load("income","income"),load("expenses","expenses"),load("credit_cards","cards"),load("emi_details","emi"),load("reminders","reminders")]);renderAll()}
 function handleError(e){
  const s=String(e?.message||e||"");
  if(s.toLowerCase().includes("jwt issued at future")){client.auth.signOut({scope:"local"});notice("loginMsg","Your saved session has a time problem. Check device date/time and sign in again.",true)}
@@ -228,10 +236,12 @@ function billStatus(b){
  if(paid>0)return "Partial";
  return "Pending";
 }
-function renderAll(){renderDashboard();renderBills();renderPayments();renderIncome();renderCards();renderEmi();renderReminders();renderReports();renderCalendar()}
+function renderAll(){renderDashboard();renderBills();renderPayments();renderExpenses();renderIncome();renderCards();renderEmi();renderReminders();renderReports();renderCalendar()}
 
 function renderDashboard(){
  const cur=ym(new Date());
+ const todayExpense=data.expenses.filter(x=>x.expense_date===isoToday()).reduce((a,x)=>a+Number(x.amount||0),0);
+ const monthExpense=data.expenses.filter(x=>(x.expense_date||"").startsWith(cur)).reduce((a,x)=>a+Number(x.amount||0),0);
  const inc=data.income.filter(x=>(x.received_on||"").startsWith(cur)).reduce((a,x)=>a+Number(x.amount||0),0);
  const bills=data.bills.filter(x=>(x.due_date||"").startsWith(cur)).reduce((a,x)=>a+Number(x.amount||0),0);
  const paid=data.payments.filter(x=>(x.paid_on||"").startsWith(cur)).reduce((a,x)=>a+Number(x.amount||0),0);
@@ -271,6 +281,21 @@ function renderBills(){
 $("billSearch").addEventListener("input",renderBills);
 
 function renderPayments(){const rows=[...data.payments].sort((a,b)=>(b.paid_on||"").localeCompare(a.paid_on||"")).map(p=>`<tr><td>${esc(p.bill_name||data.bills.find(b=>String(b.id)===String(p.bill_id))?.name||"-")}</td><td>${money(p.amount)}</td><td>${dateFmt(p.paid_on)}</td><td>${esc(p.payment_method||"-")}</td><td>${esc(p.reference||"-")}</td><td>${actionBtns("payments",p.id)}</td></tr>`);$("paymentsTable").innerHTML=table(["Bill","Amount","Paid on","Method","Reference",""],rows)}
+function renderExpenses(){
+ const today=isoToday(),cur=ym(new Date());
+ const todayTotal=data.expenses.filter(x=>x.expense_date===today).reduce((a,x)=>a+Number(x.amount||0),0);
+ const monthTotal=data.expenses.filter(x=>(x.expense_date||"").startsWith(cur)).reduce((a,x)=>a+Number(x.amount||0),0);
+ $("eToday").textContent=money(todayTotal);$("eMonth").textContent=money(monthTotal);
+ const grouped={};
+ [...data.expenses].sort((a,b)=>(b.expense_date||"").localeCompare(a.expense_date||"")).forEach(x=>{(grouped[x.expense_date||""]??=[]).push(x)});
+ let rows=[];
+ Object.entries(grouped).forEach(([date,items])=>{
+   rows.push(`<tr><td colspan="7" style="background:var(--soft);font-weight:850">${dateFmt(date)} <span class="muted">· ${money(items.reduce((a,x)=>a+Number(x.amount||0),0))}</span></td></tr>`);
+   items.forEach(x=>rows.push(`<tr><td>${dateFmt(x.expense_date)}</td><td><b>${esc(x.description)}</b></td><td>${esc(x.category||"Other")}</td><td>${money(x.amount)}</td><td>${esc(x.payment_method||"-")}</td><td>${esc(x.notes||"-")}</td><td>${actionBtns("expenses",x.id)}</td></tr>`));
+ });
+ $("expensesTable").innerHTML=rows.length?`<div class="tablewrap"><table class="table"><thead><tr><th>Date</th><th>Expense</th><th>Category</th><th>Amount</th><th>Method</th><th>Notes</th><th></th></tr></thead><tbody>${rows.join("")}</tbody></table></div>`:`<div class="empty">No daily expenses yet. Add your first expense.</div>`;
+}
+
 function renderIncome(){const rows=[...data.income].sort((a,b)=>(b.received_on||"").localeCompare(a.received_on||"")).map(x=>`<tr><td><b>${esc(x.source)}</b></td><td>${money(x.amount)}</td><td>${dateFmt(x.received_on)}</td><td>${esc(x.remarks||"-")}</td><td>${actionBtns("income",x.id)}</td></tr>`);$("incomeTable").innerHTML=table(["Source","Amount","Received","Remarks",""],rows)}
 function renderCards(){
  $("cardsGrid").innerHTML=data.cards.length?data.cards.map(c=>{const limit=Number(c.credit_limit||0),used=Number(c.outstanding||0),pct=limit?Math.min(100,used/limit*100):0;return `<div class="card"><div class="row"><div><h3 style="margin:0">${esc(c.card_name)}</h3><div class="muted">${esc(c.bank_name||"")} ${c.card_number_last4?"•••• "+esc(c.card_number_last4):""}</div></div>${actionBtns("credit_cards",c.id)}</div><div style="height:18px"></div><div class="row"><div><div class="metric-label">Outstanding</div><div class="metric">${money(used)}</div></div><div style="text-align:right"><div class="metric-label">Limit</div><b>${money(limit)}</b></div></div><div style="height:10px"></div><div class="progress"><i style="width:${pct}%"></i></div><div class="row" style="margin-top:7px"><span class="muted">${pct.toFixed(0)}% used</span><span class="muted">Due ${dateFmt(c.due_date)}</span></div></div>`}).join(""):`<div class="card" style="grid-column:1/-1"><div class="empty">No credit cards yet. Add your first card.</div></div>`;
@@ -289,8 +314,8 @@ function renderCalendar(){
 function moveMonth(n){calDate=new Date(calDate.getFullYear(),calDate.getMonth()+n,1);renderCalendar()}
 
 function renderReports(){
- const totalIncome=data.income.reduce((a,x)=>a+Number(x.amount||0),0), totalBills=data.bills.reduce((a,x)=>a+Number(x.amount||0),0), totalPaid=data.payments.reduce((a,x)=>a+Number(x.amount||0),0), outstanding=data.bills.reduce((a,x)=>a+Math.max(0,Number(x.amount||0)-Number(x.paid_amount||0)),0);
- $("rIncome").textContent=money(totalIncome);$("rBills").textContent=money(totalBills);$("rPaid").textContent=money(totalPaid);$("rOutstanding").textContent=money(outstanding);
+ const totalIncome=data.income.reduce((a,x)=>a+Number(x.amount||0),0), totalBills=data.bills.reduce((a,x)=>a+Number(x.amount||0),0), totalPaid=data.payments.reduce((a,x)=>a+Number(x.amount||0),0), outstanding=data.bills.reduce((a,x)=>a+Math.max(0,Number(x.amount||0)-Number(x.paid_amount||0)),0), totalExpenses=data.expenses.reduce((a,x)=>a+Number(x.amount||0),0);
+ $("rIncome").textContent=money(totalIncome);$("rBills").textContent=money(totalBills);$("rPaid").textContent=money(totalPaid);$("rOutstanding").textContent=money(outstanding);$("rExpenses").textContent=money(totalExpenses);
  const cats={};data.bills.forEach(b=>{const k=b.category||"Other";cats[k]=(cats[k]||0)+Math.max(0,Number(b.amount||0)-Number(b.paid_amount||0))});const arr=Object.entries(cats).sort((a,b)=>b[1]-a[1]);const max=Math.max(...arr.map(x=>x[1]),1);
  $("categoryReport").innerHTML=arr.length?arr.map(([k,v])=>`<div style="margin:11px 0"><div class="row"><span>${esc(k)}</span><b>${money(v)}</b></div><div class="progress" style="margin-top:6px"><i style="width:${v/max*100}%"></i></div></div>`).join(""):`<div class="empty">No category data yet.</div>`;
  const statuses={Pending:0,Partial:0,Paid:0,Overdue:0};data.bills.forEach(b=>statuses[billStatus(b)]++);
@@ -377,6 +402,12 @@ async function exportReportsExcel(){
     ["Source","Amount","Received On","Remarks"],
     data.income.map(x=>[s(x.source),n(x.amount),s(x.received_on),s(x.remarks)]),
     [24,14,16,30]);
+
+
+  add("Daily Expenses",
+    ["Date","Expense","Category","Amount","Payment Method","Notes"],
+    data.expenses.slice().sort((a,b)=>(b.expense_date||"").localeCompare(a.expense_date||"")).map(x=>[s(x.expense_date),s(x.description),s(x.category),n(x.amount),s(x.payment_method),s(x.notes)]),
+    [14,28,18,14,18,30]);
 
   add("Credit Cards",
     ["Card Name","Bank","Last 4","Credit Limit","Outstanding","Due Date","Statement Date"],
