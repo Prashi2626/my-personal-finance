@@ -27,12 +27,12 @@ nav{display:flex;gap:8px;overflow:auto;margin-bottom:15px}nav button{background:
 <body>
 <header>
 <div><div class="brand">💰 MY FINANCE</div><div class="sub" id="conn">Not connected</div></div>
-<div style="display:flex;gap:7px"><button class="light" id="setupBtn">⚙ Setup</button><button class="light hidden" id="logoutBtn">Logout</button></div>
+<div style="display:flex;gap:7px"><button class="light hidden" id="logoutBtn">Logout</button></div>
 </header>
 <main>
 <div id="loginScreen" class="hidden">
 <div class="card" style="max-width:500px;margin:45px auto">
-<h2>Login</h2><p class="muted">Sign in with your Supabase account.</p>
+<h2>Login</h2><p class="muted">Sign in with your Supabase account. If you see a JWT time error, check your phone/laptop date and time and try again.</p>
 <div id="loginMsg" style="margin-top:12px"></div>
 <div style="margin-top:12px"><label>Email</label><input id="loginEmail" type="email" autocomplete="username"></div>
 <div style="margin-top:10px"><label>Password</label><input id="loginPassword" type="password" autocomplete="current-password"></div>
@@ -65,9 +65,10 @@ nav{display:flex;gap:8px;overflow:auto;margin-bottom:15px}nav button{background:
 </div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./config.js"></script>
 <script>
-const DEFAULT_URL="https://eywqtwgzfxcdwkiegcnf.supabase.co";
-let config=JSON.parse(localStorage.getItem("finance_v7_config")||"null"), client=null, user=null;
+let config={url:FINANCE_CONFIG.SUPABASE_URL,key:FINANCE_CONFIG.SUPABASE_PUBLISHABLE_KEY};
+let client=null, user=null, authBusy=false;
 let data={bills:[],payments:[],income:[],cards:[],emi:[],reminders:[]};
 
 const $=id=>document.getElementById(id);
@@ -80,32 +81,105 @@ function openModal(title,body){$("modalTitle").textContent=title;$("modalBody").
 function closeModal(){$("modal").classList.add("hidden")}
 $("closeModal").onclick=closeModal;
 
-function setup(){
-openModal("Connect Supabase",`
-<div class="notice">Use your Project URL and <b>Publishable key</b>. Never enter an <b>sb_secret_...</b> key.</div>
-<label>Project URL</label>
-<input id="projectUrl" value="${esc(config?.url||DEFAULT_URL)}" placeholder="https://xxxxx.supabase.co">
-<div style="margin-top:10px"><label>Publishable key</label>
-<input id="publishableKey" type="password" value="" placeholder="sb_publishable_..."></div>
-<div style="margin-top:10px"><label><input id="showKey" type="checkbox" style="width:auto"> Show publishable key</label></div>
-<div class="row" style="display:flex;gap:8px;margin-top:14px"><button id="connectBtn">Save & Connect</button><button class="light" id="cancelBtn">Cancel</button></div>
-<p class="muted" style="margin-top:12px">The connection settings are stored only in this browser. Your records remain in Supabase.</p>`);
-$("showKey").onchange=e=>$("publishableKey").type=e.target.checked?"text":"password";
-$("cancelBtn").onclick=closeModal;$("connectBtn").onclick=saveConfig;
+function initClient(){
+  if(!config.url || !config.key || config.key.includes("PASTE_YOUR")){
+    $("conn").textContent="App configuration required";
+    throw new Error("Please add your Supabase publishable key in config.js before publishing.");
+  }
+  client=supabase.createClient(config.url,config.key,{
+    auth:{
+      autoRefreshToken:true,
+      persistSession:true,
+      detectSessionInUrl:false
+    }
+  });
+  $("conn").textContent="Supabase ready";
 }
-async function saveConfig(){
-const url=$("projectUrl").value.trim().replace(/\/$/,""),key=$("publishableKey").value.trim();
-if(!url||!key){alert("Please enter the Project URL and Publishable key.");return}
-if(!key.startsWith("sb_publishable_")){alert("Please use the Publishable key beginning with sb_publishable_. Do not use sb_secret_.");return}
-config={url,key};localStorage.setItem("finance_v7_config",JSON.stringify(config));closeModal();await init();
+
+function isJwtFutureError(e){
+  const s=String(e?.message||e||"").toLowerCase();
+  return s.includes("jwt issued at future") || s.includes("issued at future");
 }
-function initClient(){client=supabase.createClient(config.url,config.key);$("conn").textContent="Supabase connected"}
+
+async function recoverAuthError(e){
+  if(isJwtFutureError(e)){
+    try{ await client.auth.signOut({scope:"local"}); }catch(_){}
+    user=null;
+    data={bills:[],payments:[],income:[],cards:[],emi:[],reminders:[]};
+    showLogin();
+    msg("loginMsg","Your saved login token has an invalid time. Please check the device date/time, then log in again.","error");
+    return true;
+  }
+  return false;
+}
+
 async function init(){
-if(!config){$("conn").textContent="Supabase setup required";setup();return}
-try{initClient();const {data:{session}}=await client.auth.getSession();if(session){user=session.user;showApp();await loadAll()}else showLogin();
-client.auth.onAuthStateChange((_e,s)=>{user=s?.user||null;if(user){showApp();loadAll()}else showLogin()});
-}catch(e){$("conn").textContent="Connection error";alert("Supabase connection failed: "+e.message)}
+  try{
+    initClient();
+    const {data:{session},error}=await client.auth.getSession();
+    if(error) throw error;
+    if(session){
+      user=session.user;
+      showApp();
+      await loadAll();
+    }else{
+      showLogin();
+    }
+
+    client.auth.onAuthStateChange((event,session)=>{
+      user=session?.user||null;
+      if(user){
+        showApp();
+        if(event!=="INITIAL_SESSION" && !authBusy) loadAll();
+      }else{
+        showLogin();
+      }
+    });
+  }catch(e){
+    if(await recoverAuthError(e)) return;
+    $("conn").textContent="Connection error";
+    showLogin();
+    msg("loginMsg",e.message||"Could not connect to Supabase.","error");
+  }
 }
+function showLogin(){$("loginScreen").classList.remove("hidden");$("app").classList.add("hidden");$("logoutBtn").classList.add("hidden");}
+function showApp(){$("loginScreen").classList.add("hidden");$("app").classList.remove("hidden");$("logoutBtn").classList.remove("hidden");$("conn").textContent="Signed in • "+(user?.email||"")}
+async function login(){
+  if(!client){init();return}
+  if(authBusy)return;
+  authBusy=true;
+  msg("loginMsg","Signing in...");
+  const {error}=await client.auth.signInWithPassword({email:$("loginEmail").value.trim(),password:$("loginPassword").value});
+  authBusy=false;
+  if(error){
+    if(await recoverAuthError(error)) return;
+    msg("loginMsg",error.message,"error");
+  }else{
+    msg("loginMsg","");
+    await loadAll();
+  }
+}
+$("loginBtn").onclick=login;$("loginPassword").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
+$("logoutBtn").onclick=async()=>{try{await client.auth.signOut({scope:"local"})}catch(e){alert(e.message)}};
+
+async function load(table,key){
+  const {data:d,error}=await client.from(table).select("*").order("created_at",{ascending:false});
+  if(error) throw error;
+  data[key]=d||[];
+}
+async function loadAll(){
+  try{
+    await Promise.all([
+      load("bills","bills"),load("payments","payments"),load("income","income"),
+      load("credit_cards","cards"),load("emi_details","emi"),load("reminders","reminders")
+    ]);
+    render();
+  }catch(e){
+    if(await recoverAuthError(e)) return;
+    alert("Could not load data: "+e.message);
+  }
+}
+
 function showLogin(){$("loginScreen").classList.remove("hidden");$("app").classList.add("hidden");$("logoutBtn").classList.add("hidden");}
 function showApp(){$("loginScreen").classList.add("hidden");$("app").classList.remove("hidden");$("logoutBtn").classList.remove("hidden");$("conn").textContent="Signed in • "+(user.email||"")}
 async function login(){
@@ -115,7 +189,7 @@ const {error}=await client.auth.signInWithPassword({email:$("loginEmail").value.
 if(error)msg("loginMsg",error.message,"error");else msg("loginMsg","");
 }
 $("loginBtn").onclick=login;$("loginPassword").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
-$("setupBtn").onclick=setup;$("logoutBtn").onclick=()=>client.auth.signOut();
+$("logoutBtn").onclick=()=>client.auth.signOut();
 
 async function load(table,key){const {data:d,error}=await client.from(table).select("*").order("created_at",{ascending:false});if(error)throw error;data[key]=d||[]}
 async function loadAll(){try{await Promise.all([load("bills","bills"),load("payments","payments"),load("income","income"),load("credit_cards","cards"),load("emi_details","emi"),load("reminders","reminders")]);render()}catch(e){alert("Could not load data: "+e.message)}}
@@ -172,4 +246,5 @@ async function syncBill(p){const b=data.bills.find(x=>String(x.id)===String(p.bi
 document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.add("hidden"));$(b.dataset.tab).classList.remove("hidden");document.querySelectorAll("#tabs button").forEach(x=>x.classList.remove("active"));b.classList.add("active")});
 init();
 </script>
+<div style="text-align:center;color:#6b7280;font-size:11px;padding:20px">MY FINANCE V8 • Supabase synced</div>
 </body></html>
