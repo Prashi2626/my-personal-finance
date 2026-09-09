@@ -2,249 +2,340 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111827">
-<link rel="manifest" href="manifest.webmanifest">
-<title>My Personal Finance Tracker</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<title>My Finance</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,system-ui,sans-serif;background:#f5f7fb;color:#172033}
-header{background:#111827;color:white;padding:15px 20px;display:flex;justify-content:space-between;align-items:center}
-.brand{font-size:21px;font-weight:800}.sub{font-size:12px;color:#cbd5e1;margin-top:3px}
-button{border:0;border-radius:8px;padding:9px 13px;font-weight:700;cursor:pointer;background:#111827;color:#fff}
-button.light{background:#fff;color:#111827;border:1px solid #d1d5db}
-main{max-width:1200px;margin:auto;padding:20px}.hidden{display:none!important}
-nav{display:flex;gap:8px;overflow:auto;margin-bottom:15px}nav button{background:#fff;color:#374151;border:1px solid #e5e7eb;white-space:nowrap}nav button.active{background:#111827;color:#fff}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:15px;margin-bottom:14px}
-.metric{font-size:24px;font-weight:800;margin-top:6px}.muted{color:#6b7280;font-size:13px}
-.toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.tablewrap{overflow:auto;border:1px solid #e5e7eb;border-radius:10px}.table{border-collapse:collapse;width:100%;min-width:800px}.table th,.table td{padding:10px;border-bottom:1px solid #e5e7eb;text-align:left;font-size:13px}.table th{background:#f9fafb}
-.formgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}label{display:block;font-size:12px;color:#4b5563;margin-bottom:4px}input,select,textarea{width:100%;padding:9px;border:1px solid #d1d5db;border-radius:8px;font:inherit}textarea{min-height:70px}
-.modal{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;padding:15px;z-index:99}.modalbox{background:#fff;border-radius:14px;width:min(650px,100%);padding:20px;max-height:90vh;overflow:auto}
-.notice{padding:11px;border-radius:8px;background:#eef2ff;color:#3730a3;font-size:13px;margin-bottom:12px}.error{background:#fee2e2;color:#991b1b}.success{background:#dcfce7;color:#166534}
-@media(max-width:700px){.grid{grid-template-columns:repeat(2,1fr)}.formgrid{grid-template-columns:1fr}}@media(max-width:450px){main{padding:10px}.grid{grid-template-columns:1fr 1fr}.metric{font-size:19px}}
+:root{--ink:#111827;--muted:#667085;--bg:#f4f6fa;--card:#fff;--line:#e5e7eb;--soft:#f8fafc;--good:#15803d;--warn:#b45309;--bad:#b91c1c;--blue:#2563eb}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+button,input,select,textarea{font:inherit}button{cursor:pointer}
+.app-shell{min-height:100vh;display:flex}.sidebar{width:235px;background:#111827;color:#fff;position:fixed;inset:0 auto 0 0;padding:22px 14px;z-index:20}.brand{font-size:20px;font-weight:850;padding:5px 10px 22px}.brand small{display:block;color:#94a3b8;font-size:11px;font-weight:500;margin-top:4px}
+.nav{display:grid;gap:6px}.nav button{border:0;background:transparent;color:#cbd5e1;text-align:left;padding:11px 12px;border-radius:10px;font-weight:700}.nav button:hover,.nav button.active{background:#1f2937;color:#fff}.side-bottom{position:absolute;bottom:20px;left:14px;right:14px}.side-bottom button{width:100%;background:#fff;color:#111827;border:0;border-radius:9px;padding:10px;font-weight:750}
+.main{margin-left:235px;width:calc(100% - 235px);min-width:0}.topbar{height:72px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:10}.page-title{font-size:22px;font-weight:850}.top-actions{display:flex;align-items:center;gap:8px}.pill{font-size:12px;color:#475467;background:#f2f4f7;padding:7px 10px;border-radius:999px}.content{max-width:1300px;margin:auto;padding:24px}.section{display:none}.section.active{display:block}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:18px;box-shadow:0 1px 2px #00000008}.metric-label{font-size:12px;color:var(--muted);font-weight:650}.metric{font-size:26px;font-weight:850;margin-top:5px}.metric-note{font-size:12px;color:var(--muted);margin-top:5px}.row{display:flex;justify-content:space-between;align-items:center;gap:10px}.stack{display:grid;gap:14px}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}.toolbar h2,.toolbar h3{margin:0}.btn{border:0;background:var(--ink);color:#fff;padding:10px 13px;border-radius:9px;font-weight:800}.btn.secondary{background:#fff;color:var(--ink);border:1px solid var(--line)}.btn.danger{background:#fff;color:var(--bad);border:1px solid #fecaca}.btn.small{padding:7px 9px;font-size:12px}.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:11px}.table{width:100%;border-collapse:collapse;min-width:760px}.table th,.table td{padding:11px 12px;border-bottom:1px solid var(--line);text-align:left;font-size:13px}.table th{background:var(--soft);color:#475467;font-size:11px;text-transform:uppercase;letter-spacing:.04em}.table tr:last-child td{border-bottom:0}.badge{display:inline-flex;align-items:center;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:800}.badge.good{background:#dcfce7;color:var(--good)}.badge.warn{background:#fef3c7;color:var(--warn)}.badge.bad{background:#fee2e2;color:var(--bad)}.badge.neutral{background:#eef2f6;color:#475467}.progress{height:8px;background:#eef2f6;border-radius:99px;overflow:hidden}.progress>i{display:block;height:100%;background:#111827;border-radius:99px}.twocol{display:grid;grid-template-columns:1.3fr .7fr;gap:14px}.mini-list{display:grid;gap:9px}.mini-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}.mini-item:last-child{border-bottom:0}.muted{color:var(--muted);font-size:13px}.empty{padding:25px;text-align:center;color:var(--muted);font-size:13px}.search{min-width:180px;border:1px solid var(--line);border-radius:9px;padding:9px 11px;background:#fff}.calendar{display:grid;grid-template-columns:repeat(7,1fr);border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}.cal-head{background:var(--soft);padding:10px;font-size:11px;font-weight:800;color:#667085;text-align:center}.day{min-height:105px;padding:8px;border-top:1px solid var(--line);border-right:1px solid var(--line)}.day:nth-child(7n){border-right:0}.daynum{font-size:12px;font-weight:800}.event{margin-top:6px;font-size:10px;padding:4px 5px;border-radius:6px;background:#eef2ff;color:#3730a3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.formgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}label{display:block;font-size:12px;color:#475467;font-weight:700;margin-bottom:5px}input,select,textarea{width:100%;border:1px solid #d0d5dd;border-radius:9px;padding:10px;background:#fff;color:var(--ink)}textarea{min-height:80px;resize:vertical}.check{display:flex;align-items:center;gap:8px}.check input{width:auto}.modal{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}.modal.hidden{display:none}.modalbox{width:min(680px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:16px;padding:20px}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.close{border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 10px}.login-wrap{min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(135deg,#eef2ff,#f8fafc)}.login-card{width:min(420px,100%);background:#fff;border:1px solid var(--line);border-radius:18px;padding:26px;box-shadow:0 10px 30px #0000000d}.login-card h1{margin:0 0 5px}.login-card .muted{margin-bottom:20px}.notice{padding:10px 12px;border-radius:9px;background:#eef2ff;color:#3730a3;font-size:13px;margin:10px 0}.notice.error{background:#fee2e2;color:#991b1b}.mobile-nav{display:none}.chartbar{display:flex;align-items:end;gap:8px;height:150px;padding-top:15px}.barcol{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:end;gap:5px}.bar{width:100%;max-width:40px;background:#111827;border-radius:6px 6px 2px 2px;min-height:3px}.barcol span{font-size:10px;color:#667085}.barcol b{font-size:10px}
+@media(max-width:900px){.sidebar{display:none}.main{margin-left:0;width:100%}.topbar{padding:0 15px;height:62px}.content{padding:14px 12px 82px}.grid{grid-template-columns:repeat(2,1fr)}.twocol{grid-template-columns:1fr}.mobile-nav{position:fixed;display:grid;grid-template-columns:repeat(5,1fr);bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);z-index:30;padding:7px 5px calc(7px + env(safe-area-inset-bottom))}.mobile-nav button{border:0;background:#fff;color:#667085;font-size:10px;font-weight:750;padding:5px 2px}.mobile-nav button.active{color:#111827}.mobile-nav span{display:block;font-size:18px;margin-bottom:2px}.formgrid{grid-template-columns:1fr}.calendar .day{min-height:75px;padding:5px}.event{font-size:9px}.page-title{font-size:19px}.pill{display:none}}
+@media(max-width:480px){.grid{gap:9px}.card{padding:13px;border-radius:12px}.metric{font-size:20px}.toolbar h2{font-size:18px}.table{min-width:680px}.top-actions .btn.secondary{display:none}}
+.hidden{display:none!important}
 </style>
 </head>
 <body>
-<header>
-<div><div class="brand">💰 MY FINANCE</div><div class="sub" id="conn">Not connected</div></div>
-<div style="display:flex;gap:7px"><button class="light hidden" id="logoutBtn">Logout</button></div>
-</header>
-<main>
-<div id="loginScreen" class="hidden">
-<div class="card" style="max-width:500px;margin:45px auto">
-<h2>Login</h2><p class="muted">Sign in with your Supabase account. If you see a JWT time error, check your phone/laptop date and time and try again.</p>
-<div id="loginMsg" style="margin-top:12px"></div>
-<div style="margin-top:12px"><label>Email</label><input id="loginEmail" type="email" autocomplete="username"></div>
-<div style="margin-top:10px"><label>Password</label><input id="loginPassword" type="password" autocomplete="current-password"></div>
-<button id="loginBtn" style="width:100%;margin-top:14px">Login</button>
-</div></div>
-
-<div id="app" class="hidden">
-<nav id="tabs">
-<button class="active" data-tab="dashboard">Dashboard</button><button data-tab="bills">Bills</button><button data-tab="payments">Payments</button><button data-tab="income">Income</button><button data-tab="cards">Credit Cards</button><button data-tab="emi">EMIs</button><button data-tab="reminders">Reminders</button>
-</nav>
-<section id="dashboard" class="tab">
-<div class="grid">
-<div class="card"><div class="muted">This month income</div><div class="metric" id="dIncome">₹0</div></div>
-<div class="card"><div class="muted">This month bills</div><div class="metric" id="dBills">₹0</div></div>
-<div class="card"><div class="muted">Paid this month</div><div class="metric" id="dPaid">₹0</div></div>
-<div class="card"><div class="muted">Pending</div><div class="metric" id="dPending">₹0</div></div>
+<div id="loginView" class="login-wrap hidden">
+  <div class="login-card">
+    <div style="font-size:30px">💰</div><h1>MY FINANCE</h1>
+    <div class="muted">Your personal bills & money dashboard</div>
+    <div id="loginMsg"></div>
+    <label>Email</label><input id="email" type="email" autocomplete="username" placeholder="you@example.com">
+    <div style="height:10px"></div><label>Password</label><input id="password" type="password" autocomplete="current-password">
+    <button class="btn" id="loginBtn" style="width:100%;margin-top:14px">Sign in</button>
+  </div>
 </div>
-<div class="card"><div class="toolbar"><h3>Upcoming bills</h3><button onclick="openForm('bill')">+ Add Bill</button></div><div id="upcoming"></div></div>
-</section>
-<section id="bills" class="tab hidden"><div class="card"><div class="toolbar"><h3>Bills</h3><button onclick="openForm('bill')">+ Add Bill</button></div><div id="billsTable"></div></div></section>
-<section id="payments" class="tab hidden"><div class="card"><div class="toolbar"><h3>Payments</h3><button onclick="openForm('payment')">+ Record Payment</button></div><div id="paymentsTable"></div></div></section>
-<section id="income" class="tab hidden"><div class="card"><div class="toolbar"><h3>Income</h3><button onclick="openForm('income')">+ Add Income</button></div><div id="incomeTable"></div></div></section>
-<section id="cards" class="tab hidden"><div class="card"><div class="toolbar"><h3>Credit Cards</h3><button onclick="openForm('card')">+ Add Card</button></div><div id="cardsTable"></div></div></section>
-<section id="emi" class="tab hidden"><div class="card"><div class="toolbar"><h3>EMIs</h3><button onclick="openForm('emi')">+ Add EMI</button></div><div id="emiTable"></div></div></section>
-<section id="reminders" class="tab hidden"><div class="card"><div class="toolbar"><h3>Reminders</h3><button onclick="openForm('reminder')">+ Add Reminder</button></div><div id="reminderTable"></div></div></section>
-</div></main>
 
-<div id="modal" class="modal hidden"><div class="modalbox">
-<div class="toolbar"><h2 id="modalTitle"></h2><button class="light" id="closeModal">✕</button></div><div id="modalBody"></div>
-</div></div>
+<div id="appView" class="app-shell hidden">
+  <aside class="sidebar">
+    <div class="brand">💰 MY FINANCE<small>Personal finance tracker</small></div>
+    <div class="nav" id="sideNav">
+      <button data-tab="dashboard">⌂ &nbsp; Dashboard</button>
+      <button data-tab="bills">▣ &nbsp; Bills</button>
+      <button data-tab="payments">↗ &nbsp; Payments</button>
+      <button data-tab="income">₹ &nbsp; Income</button>
+      <button data-tab="cards">▤ &nbsp; Credit Cards</button>
+      <button data-tab="emi">▥ &nbsp; EMIs</button>
+      <button data-tab="calendar">▦ &nbsp; Calendar</button>
+      <button data-tab="reports">◔ &nbsp; Reports</button>
+      <button data-tab="reminders">♢ &nbsp; Reminders</button>
+    </div>
+    <div class="side-bottom"><button id="logoutBtn">Logout</button></div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div><div class="page-title" id="pageTitle">Dashboard</div><div class="muted" id="monthLabel"></div></div>
+      <div class="top-actions"><span class="pill" id="userPill"></span><button class="btn" onclick="openForm('bill')">+ Add Bill</button></div>
+    </header>
+
+    <main class="content">
+      <section id="tab-dashboard" class="section active">
+        <div class="grid">
+          <div class="card"><div class="metric-label">This month income</div><div class="metric" id="mIncome">₹0</div><div class="metric-note" id="mIncomeNote"></div></div>
+          <div class="card"><div class="metric-label">This month bills</div><div class="metric" id="mBills">₹0</div><div class="metric-note" id="mBillsNote"></div></div>
+          <div class="card"><div class="metric-label">Paid this month</div><div class="metric" id="mPaid">₹0</div><div class="metric-note" id="mPaidNote"></div></div>
+          <div class="card"><div class="metric-label">Pending</div><div class="metric" id="mPending">₹0</div><div class="metric-note" id="mPendingNote"></div></div>
+        </div>
+        <div style="height:14px"></div>
+        <div class="twocol">
+          <div class="card"><div class="toolbar"><h3>Due soon</h3><button class="btn secondary small" onclick="go('bills')">View all</button></div><div id="dueSoon"></div></div>
+          <div class="card"><div class="toolbar"><h3>Quick summary</h3></div><div id="quickSummary"></div></div>
+        </div>
+        <div style="height:14px"></div>
+        <div class="card"><div class="toolbar"><h3>Monthly spending</h3><span class="muted">Last 6 months</span></div><div id="spendingChart"></div></div>
+      </section>
+
+      <section id="tab-bills" class="section"><div class="card">
+        <div class="toolbar"><div><h2>Bills</h2><span class="muted">Track every recurring and one-time payment</span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><input class="search" id="billSearch" placeholder="Search bills"><button class="btn" onclick="openForm('bill')">+ Add Bill</button></div></div>
+        <div id="billsTable"></div>
+      </div></section>
+
+      <section id="tab-payments" class="section"><div class="card">
+        <div class="toolbar"><div><h2>Payments</h2><span class="muted">Your payment history</span></div><button class="btn" onclick="openForm('payment')">+ Record Payment</button></div>
+        <div id="paymentsTable"></div>
+      </div></section>
+
+      <section id="tab-income" class="section"><div class="card">
+        <div class="toolbar"><div><h2>Income</h2><span class="muted">Salary and other income</span></div><button class="btn" onclick="openForm('income')">+ Add Income</button></div>
+        <div id="incomeTable"></div>
+      </div></section>
+
+      <section id="tab-cards" class="section">
+        <div class="toolbar"><div><h2>Credit Cards</h2><div class="muted">Limits, outstanding and due dates</div></div><button class="btn" onclick="openForm('card')">+ Add Card</button></div>
+        <div id="cardsGrid" class="grid"></div>
+      </section>
+
+      <section id="tab-emi" class="section"><div class="card">
+        <div class="toolbar"><div><h2>EMIs</h2><span class="muted">Track installments and remaining progress</span></div><button class="btn" onclick="openForm('emi')">+ Add EMI</button></div>
+        <div id="emiTable"></div>
+      </div></section>
+
+      <section id="tab-calendar" class="section"><div class="card">
+        <div class="toolbar"><div><h2 id="calTitle">Calendar</h2><span class="muted">Bills and EMIs by due date</span></div><div style="display:flex;gap:7px"><button class="btn secondary small" onclick="moveMonth(-1)">←</button><button class="btn secondary small" onclick="moveMonth(1)">→</button></div></div>
+        <div id="calendar"></div>
+      </div></section>
+
+      <section id="tab-reports" class="section">
+        <div class="grid">
+          <div class="card"><div class="metric-label">Total income</div><div class="metric" id="rIncome">₹0</div></div>
+          <div class="card"><div class="metric-label">Total bills</div><div class="metric" id="rBills">₹0</div></div>
+          <div class="card"><div class="metric-label">Total paid</div><div class="metric" id="rPaid">₹0</div></div>
+          <div class="card"><div class="metric-label">Outstanding</div><div class="metric" id="rOutstanding">₹0</div></div>
+        </div>
+        <div style="height:14px"></div>
+        <div class="twocol"><div class="card"><div class="toolbar"><h3>Spending by category</h3></div><div id="categoryReport"></div></div><div class="card"><div class="toolbar"><h3>Bill status</h3></div><div id="statusReport"></div></div></div>
+      </section>
+
+      <section id="tab-reminders" class="section"><div class="card">
+        <div class="toolbar"><div><h2>Reminders</h2><span class="muted">Payment reminder settings</span></div><button class="btn" onclick="openForm('reminder')">+ Add Reminder</button></div>
+        <div id="reminderTable"></div>
+      </div></section>
+    </main>
+  </div>
+</div>
+
+<nav class="mobile-nav" id="mobileNav">
+  <button data-tab="dashboard"><span>⌂</span>Home</button>
+  <button data-tab="bills"><span>▣</span>Bills</button>
+  <button data-tab="payments"><span>↗</span>Money</button>
+  <button data-tab="calendar"><span>▦</span>Calendar</button>
+  <button data-tab="reports"><span>◔</span>Reports</button>
+</nav>
+
+<div id="modal" class="modal hidden"><div class="modalbox"><div class="modal-head"><h2 id="modalTitle" style="margin:0"></h2><button class="close" id="closeModal">✕</button></div><div id="modalBody"></div></div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./config.js"></script>
 <script>
-let config={url:FINANCE_CONFIG.SUPABASE_URL,key:FINANCE_CONFIG.SUPABASE_PUBLISHABLE_KEY};
-let client=null, user=null, authBusy=false;
-let data={bills:[],payments:[],income:[],cards:[],emi:[],reminders:[]};
-
+"use strict";
 const $=id=>document.getElementById(id);
-const esc=x=>String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
-const money=x=>new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:0}).format(Number(x||0));
-const df=x=>x?new Date(x+"T00:00:00").toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}):"-";
-function msg(id,text,cls="notice"){ $(id).innerHTML=text?`<div class="${cls}">${esc(text)}</div>`:""; }
+const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+const money=v=>new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:0}).format(Number(v||0));
+const dateFmt=v=>v?new Date(v+"T00:00:00").toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}):"-";
+const isoToday=()=>new Date().toISOString().slice(0,10);
+const ym=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+const monthName=d=>d.toLocaleDateString("en-IN",{month:"long",year:"numeric"});
+let client,user,data={bills:[],payments:[],income:[],cards:[],emi:[],reminders:[]},activeTab="dashboard",calDate=new Date(),editing=null;
 
-function openModal(title,body){$("modalTitle").textContent=title;$("modalBody").innerHTML=body;$("modal").classList.remove("hidden")}
-function closeModal(){$("modal").classList.add("hidden")}
+const schemas={
+ bill:{title:"Bill",table:"bills",key:"bills",fields:[
+  ["name","Bill name","text",true],["category","Category","text"],["frequency","Frequency","select",false,["Monthly","Quarterly","Yearly","One-time"]],
+  ["due_date","Due date","date"],["statement_date","Statement date","date"],["amount","Amount","number"],["paid_amount","Paid amount","number"],
+  ["status","Status","select",false,["Pending","Partial","Paid","Overdue"]],["paid_on","Paid on","date"],["reference","Reference","text"],["remarks","Remarks","textarea"]
+ ]},
+ payment:{title:"Payment",table:"payments",key:"payments",fields:[
+  ["bill_id","Bill","bill"],["amount","Amount","number",true],["paid_on","Paid on","date"],["payment_method","Method","select",false,["UPI","Bank transfer","Cash","Card","Auto-debit","Other"]],["reference","Reference","text"],["remarks","Remarks","textarea"]
+ ]},
+ income:{title:"Income",table:"income",key:"income",fields:[
+  ["source","Source","text",true],["amount","Amount","number",true],["received_on","Received on","date"],["remarks","Remarks","textarea"]
+ ]},
+ card:{title:"Credit Card",table:"credit_cards",key:"cards",fields:[
+  ["card_name","Card name","text",true],["bank_name","Bank","text"],["card_number_last4","Last 4 digits","text"],["credit_limit","Credit limit","number"],["outstanding","Outstanding","number"],["statement_date","Statement date","date"],["due_date","Due date","date"]
+ ]},
+ emi:{title:"EMI",table:"emi_details",key:"emi",fields:[
+  ["bill_id","Linked bill","bill"],["loan_name","Loan name","text",true],["lender","Lender","text"],["emi_amount","EMI amount","number"],["total_emis","Total EMIs","number"],["paid_emis","Paid EMIs","number"],["next_due_date","Next due date","date"]
+ ]},
+ reminder:{title:"Reminder",table:"reminders",key:"reminders",fields:[
+  ["bill_id","Bill","bill"],["reminder_date","Reminder date","date"],["reminder_days_before","Days before","number"],["enabled","Enabled","checkbox"]
+ ]}
+};
+
+function show(id){$(id).classList.remove("hidden")} function hide(id){$(id).classList.add("hidden")}
+function notice(id,text,error=false){$(id).innerHTML=text?`<div class="notice ${error?"error":""}">${esc(text)}</div>`:""}
+function openModal(title,body){$("modalTitle").textContent=title;$("modalBody").innerHTML=body;show("modal")}
+function closeModal(){hide("modal")}
 $("closeModal").onclick=closeModal;
+$("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal()});
+
+function go(tab){
+ activeTab=tab;
+ document.querySelectorAll(".section").forEach(s=>s.classList.toggle("active",s.id==="tab-"+tab));
+ document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));
+ const titles={dashboard:"Dashboard",bills:"Bills",payments:"Payments",income:"Income",cards:"Credit Cards",emi:"EMIs",calendar:"Calendar",reports:"Reports",reminders:"Reminders"};
+ $("pageTitle").textContent=titles[tab]||"Dashboard";
+ if(tab==="calendar")renderCalendar();
+}
+document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>go(b.dataset.tab)));
 
 function initClient(){
-  if(!config.url || !config.key || config.key.includes("PASTE_YOUR")){
-    $("conn").textContent="App configuration required";
-    throw new Error("Please add your Supabase publishable key in config.js before publishing.");
-  }
-  client=supabase.createClient(config.url,config.key,{
-    auth:{
-      autoRefreshToken:true,
-      persistSession:true,
-      detectSessionInUrl:false
-    }
+ if(!window.FINANCE_CONFIG?.SUPABASE_URL || !window.FINANCE_CONFIG?.SUPABASE_PUBLISHABLE_KEY || window.FINANCE_CONFIG.SUPABASE_PUBLISHABLE_KEY.includes("PASTE_")) throw new Error("Supabase configuration is missing.");
+ client=supabase.createClient(FINANCE_CONFIG.SUPABASE_URL,FINANCE_CONFIG.SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+}
+async function boot(){
+ try{
+  initClient();
+  const {data:s,error}=await client.auth.getSession();
+  if(error)throw error;
+  client.auth.onAuthStateChange((event,session)=>{
+    user=session?.user||null;
+    if(user){showApp(); if(event!=="INITIAL_SESSION") loadAll().catch(handleError)}
+    else showLogin();
   });
-  $("conn").textContent="Supabase ready";
+  if(s?.session){user=s.session.user;showApp();await loadAll()}else showLogin();
+ }catch(e){showLogin();notice("loginMsg",e.message||"Unable to connect.",true)}
 }
-
-function isJwtFutureError(e){
-  const s=String(e?.message||e||"").toLowerCase();
-  return s.includes("jwt issued at future") || s.includes("issued at future");
-}
-
-async function recoverAuthError(e){
-  if(isJwtFutureError(e)){
-    try{ await client.auth.signOut({scope:"local"}); }catch(_){}
-    user=null;
-    data={bills:[],payments:[],income:[],cards:[],emi:[],reminders:[]};
-    showLogin();
-    msg("loginMsg","Your saved login token has an invalid time. Please check the device date/time, then log in again.","error");
-    return true;
-  }
-  return false;
-}
-
-async function init(){
-  try{
-    initClient();
-    const {data:{session},error}=await client.auth.getSession();
-    if(error) throw error;
-    if(session){
-      user=session.user;
-      showApp();
-      await loadAll();
-    }else{
-      showLogin();
-    }
-
-    client.auth.onAuthStateChange((event,session)=>{
-      user=session?.user||null;
-      if(user){
-        showApp();
-        if(event!=="INITIAL_SESSION" && !authBusy) loadAll();
-      }else{
-        showLogin();
-      }
-    });
-  }catch(e){
-    if(await recoverAuthError(e)) return;
-    $("conn").textContent="Connection error";
-    showLogin();
-    msg("loginMsg",e.message||"Could not connect to Supabase.","error");
-  }
-}
-function showLogin(){$("loginScreen").classList.remove("hidden");$("app").classList.add("hidden");$("logoutBtn").classList.add("hidden");}
-function showApp(){$("loginScreen").classList.add("hidden");$("app").classList.remove("hidden");$("logoutBtn").classList.remove("hidden");$("conn").textContent="Signed in • "+(user?.email||"")}
+function showLogin(){show("loginView");hide("appView");$("userPill").textContent=""}
+function showApp(){hide("loginView");show("appView");$("userPill").textContent=user?.email||"";$("monthLabel").textContent=monthName(new Date())}
 async function login(){
-  if(!client){init();return}
-  if(authBusy)return;
-  authBusy=true;
-  msg("loginMsg","Signing in...");
-  const {error}=await client.auth.signInWithPassword({email:$("loginEmail").value.trim(),password:$("loginPassword").value});
-  authBusy=false;
-  if(error){
-    if(await recoverAuthError(error)) return;
-    msg("loginMsg",error.message,"error");
-  }else{
-    msg("loginMsg","");
-    await loadAll();
-  }
+ notice("loginMsg","Signing in...");
+ const {error}=await client.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});
+ if(error)notice("loginMsg",error.message,true);else notice("loginMsg","");
 }
-$("loginBtn").onclick=login;$("loginPassword").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
-$("logoutBtn").onclick=async()=>{try{await client.auth.signOut({scope:"local"})}catch(e){alert(e.message)}};
+$("loginBtn").onclick=login;$("password").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
+$("logoutBtn").onclick=()=>client.auth.signOut({scope:"local"});
 
 async function load(table,key){
-  const {data:d,error}=await client.from(table).select("*").order("created_at",{ascending:false});
-  if(error) throw error;
-  data[key]=d||[];
+ const {data:d,error}=await client.from(table).select("*").order("created_at",{ascending:false});
+ if(error)throw error;data[key]=d||[];
 }
-async function loadAll(){
-  try{
-    await Promise.all([
-      load("bills","bills"),load("payments","payments"),load("income","income"),
-      load("credit_cards","cards"),load("emi_details","emi"),load("reminders","reminders")
-    ]);
-    render();
-  }catch(e){
-    if(await recoverAuthError(e)) return;
-    alert("Could not load data: "+e.message);
-  }
+async function loadAll(){await Promise.all([load("bills","bills"),load("payments","payments"),load("income","income"),load("credit_cards","cards"),load("emi_details","emi"),load("reminders","reminders")]);renderAll()}
+function handleError(e){
+ const s=String(e?.message||e||"");
+ if(s.toLowerCase().includes("jwt issued at future")){client.auth.signOut({scope:"local"});notice("loginMsg","Your saved session has a time problem. Check device date/time and sign in again.",true)}
+ else alert("Could not load data: "+s)
 }
 
-function showLogin(){$("loginScreen").classList.remove("hidden");$("app").classList.add("hidden");$("logoutBtn").classList.add("hidden");}
-function showApp(){$("loginScreen").classList.add("hidden");$("app").classList.remove("hidden");$("logoutBtn").classList.remove("hidden");$("conn").textContent="Signed in • "+(user.email||"")}
-async function login(){
-if(!client){setup();return}
-msg("loginMsg","Signing in...");
-const {error}=await client.auth.signInWithPassword({email:$("loginEmail").value.trim(),password:$("loginPassword").value});
-if(error)msg("loginMsg",error.message,"error");else msg("loginMsg","");
+function billStatus(b){
+ const paid=Number(b.paid_amount||0),amt=Number(b.amount||0);
+ if(String(b.status||"").toLowerCase()==="paid"||paid>=amt&&amt>0)return "Paid";
+ if(b.due_date && b.due_date<isoToday() && paid<amt)return "Overdue";
+ if(paid>0)return "Partial";
+ return "Pending";
 }
-$("loginBtn").onclick=login;$("loginPassword").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
-$("logoutBtn").onclick=()=>client.auth.signOut();
+function renderAll(){renderDashboard();renderBills();renderPayments();renderIncome();renderCards();renderEmi();renderReminders();renderReports();renderCalendar()}
 
-async function load(table,key){const {data:d,error}=await client.from(table).select("*").order("created_at",{ascending:false});if(error)throw error;data[key]=d||[]}
-async function loadAll(){try{await Promise.all([load("bills","bills"),load("payments","payments"),load("income","income"),load("credit_cards","cards"),load("emi_details","emi"),load("reminders","reminders")]);render()}catch(e){alert("Could not load data: "+e.message)}}
-function render(){
-const ym=new Date().toISOString().slice(0,7);
-$("dIncome").textContent=money(data.income.filter(x=>(x.received_on||"").startsWith(ym)).reduce((a,x)=>a+Number(x.amount||0),0));
-$("dBills").textContent=money(data.bills.filter(x=>(x.due_date||"").startsWith(ym)).reduce((a,x)=>a+Number(x.amount||0),0));
-$("dPaid").textContent=money(data.payments.filter(x=>(x.paid_on||"").startsWith(ym)).reduce((a,x)=>a+Number(x.amount||0),0));
-$("dPending").textContent=money(data.bills.filter(x=>String(x.status||"Pending").toLowerCase()!=="paid").reduce((a,x)=>a+Math.max(0,Number(x.amount||0)-Number(x.paid_amount||0)),0));
-const up=data.bills.filter(x=>String(x.status||"Pending").toLowerCase()!=="paid").sort((a,b)=>(a.due_date||"").localeCompare(b.due_date||"")).slice(0,8);
-$("upcoming").innerHTML=table(["Bill","Category","Due","Amount","Status"],up.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.category||"-")}</td><td>${df(x.due_date)}</td><td>${money(x.amount)}</td><td>${esc(x.status||"Pending")}</td></tr>`));
-$("billsTable").innerHTML=table(["Name","Category","Frequency","Due","Amount","Paid","Status","Actions"],data.bills.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.category||"-")}</td><td>${esc(x.frequency||"-")}</td><td>${df(x.due_date)}</td><td>${money(x.amount)}</td><td>${money(x.paid_amount)}</td><td>${esc(x.status||"Pending")}</td><td>${acts("bills",x.id)}</td></tr>`));
-$("paymentsTable").innerHTML=table(["Bill","Amount","Paid on","Method","Reference","Actions"],data.payments.map(x=>`<tr><td>${esc(x.bill_name||"-")}</td><td>${money(x.amount)}</td><td>${df(x.paid_on)}</td><td>${esc(x.payment_method||"-")}</td><td>${esc(x.reference||"-")}</td><td>${acts("payments",x.id)}</td></tr>`));
-$("incomeTable").innerHTML=table(["Source","Amount","Received","Remarks","Actions"],data.income.map(x=>`<tr><td>${esc(x.source)}</td><td>${money(x.amount)}</td><td>${df(x.received_on)}</td><td>${esc(x.remarks||"-")}</td><td>${acts("income",x.id)}</td></tr>`));
-$("cardsTable").innerHTML=table(["Card","Bank","Last 4","Limit","Outstanding","Due","Actions"],data.cards.map(x=>`<tr><td>${esc(x.card_name)}</td><td>${esc(x.bank_name||"-")}</td><td>${esc(x.card_number_last4||"-")}</td><td>${money(x.credit_limit)}</td><td>${money(x.outstanding)}</td><td>${df(x.due_date)}</td><td>${acts("credit_cards",x.id)}</td></tr>`));
-$("emiTable").innerHTML=table(["Loan","Lender","EMI","Total","Paid","Next due","Actions"],data.emi.map(x=>`<tr><td>${esc(x.loan_name||"-")}</td><td>${esc(x.lender||"-")}</td><td>${money(x.emi_amount)}</td><td>${esc(x.total_emis||"-")}</td><td>${esc(x.paid_emis||0)}</td><td>${df(x.next_due_date)}</td><td>${acts("emi_details",x.id)}</td></tr>`));
-$("reminderTable").innerHTML=table(["Bill","Reminder date","Days before","Enabled","Actions"],data.reminders.map(x=>{const b=data.bills.find(y=>String(y.id)===String(x.bill_id));return `<tr><td>${esc(b?.name||"General")}</td><td>${df(x.reminder_date)}</td><td>${esc(x.reminder_days_before)}</td><td>${x.enabled?"Yes":"No"}</td><td>${acts("reminders",x.id)}</td></tr>`}));
+function renderDashboard(){
+ const cur=ym(new Date());
+ const inc=data.income.filter(x=>(x.received_on||"").startsWith(cur)).reduce((a,x)=>a+Number(x.amount||0),0);
+ const bills=data.bills.filter(x=>(x.due_date||"").startsWith(cur)).reduce((a,x)=>a+Number(x.amount||0),0);
+ const paid=data.payments.filter(x=>(x.paid_on||"").startsWith(cur)).reduce((a,x)=>a+Number(x.amount||0),0);
+ const pending=data.bills.filter(x=>billStatus(x)!=="Paid").reduce((a,x)=>a+Math.max(0,Number(x.amount||0)-Number(x.paid_amount||0)),0);
+ $("mIncome").textContent=money(inc);$("mBills").textContent=money(bills);$("mPaid").textContent=money(paid);$("mPending").textContent=money(pending);
+ $("mIncomeNote").textContent=`${data.income.filter(x=>(x.received_on||"").startsWith(cur)).length} income entries`;
+ $("mBillsNote").textContent=`${data.bills.filter(x=>(x.due_date||"").startsWith(cur)).length} bills due`;
+ $("mPaidNote").textContent=`${data.payments.filter(x=>(x.paid_on||"").startsWith(cur)).length} payments`;
+ $("mPendingNote").textContent=`${data.bills.filter(x=>billStatus(x)!=="Paid").length} unpaid bills`;
+ const today=isoToday();
+ const soon=data.bills.filter(x=>billStatus(x)!=="Paid"&&x.due_date&&x.due_date>=today).sort((a,b)=>a.due_date.localeCompare(b.due_date)).slice(0,6);
+ $("dueSoon").innerHTML=soon.length?`<div class="mini-list">${soon.map(b=>`<div class="mini-item"><div><b>${esc(b.name)}</b><div class="muted">${dateFmt(b.due_date)} · ${esc(b.category||"Other")}</div></div><div style="text-align:right"><b>${money(Math.max(0,Number(b.amount||0)-Number(b.paid_amount||0)))}</b><div>${statusBadge(billStatus(b))}</div></div></div>`).join("")}</div>`:`<div class="empty">No upcoming unpaid bills 🎉</div>`;
+ $("quickSummary").innerHTML=`<div class="mini-list">
+  <div class="mini-item"><span class="muted">Credit cards</span><b>${data.cards.length}</b></div>
+  <div class="mini-item"><span class="muted">Active EMIs</span><b>${data.emi.length}</b></div>
+  <div class="mini-item"><span class="muted">Bills</span><b>${data.bills.length}</b></div>
+  <div class="mini-item"><span class="muted">Reminders</span><b>${data.reminders.filter(x=>x.enabled!==false).length}</b></div>
+ </div>`;
+ renderSpendingChart();
 }
-function table(headers,rows){return rows.length?`<div class="tablewrap"><table class="table"><thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.join("")}</tbody></table></div>`:`<div class="muted" style="padding:12px">No records yet.</div>`}
-function acts(t,id){return `<button class="light" onclick="editRec('${t}',${id})">Edit</button> <button class="light" onclick="delRec('${t}',${id})">Delete</button>`}
+function statusBadge(s){const c=s==="Paid"?"good":s==="Overdue"?"bad":s==="Partial"?"warn":"neutral";return `<span class="badge ${c}">${esc(s)}</span>`}
+function renderSpendingChart(){
+ const now=new Date(), months=[];
+ for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push({key:ym(d),label:d.toLocaleDateString("en-IN",{month:"short"})})}
+ const vals=months.map(m=>data.payments.filter(x=>(x.paid_on||"").startsWith(m.key)).reduce((a,x)=>a+Number(x.amount||0),0));
+ const max=Math.max(...vals,1);
+ $("spendingChart").innerHTML=`<div class="chartbar">${vals.map((v,i)=>`<div class="barcol"><b>${v?money(v).replace("₹","₹"):"₹0"}</b><div class="bar" style="height:${Math.max(3,v/max*110)}px"></div><span>${months[i].label}</span></div>`).join("")}</div>`;
+}
 
-const schema={
-bill:{title:"Bill",table:"bills",key:"bills",fields:[["name","Bill name","text",1],["category","Category","text"],["frequency","Frequency","select",0,["Monthly","Quarterly","Yearly","One-time"]],["due_date","Due date","date"],["statement_date","Statement date","date"],["amount","Amount","number"],["paid_amount","Paid amount","number"],["status","Status","select",0,["Pending","Partial","Paid","Overdue"]],["paid_on","Paid on","date"],["reference","Reference","text"],["remarks","Remarks","textarea"]]},
-payment:{title:"Payment",table:"payments",key:"payments",fields:[["bill_id","Bill","bill"],["amount","Amount","number",1],["paid_on","Paid on","date"],["payment_method","Method","select",0,["UPI","Bank transfer","Cash","Card","Auto-debit","Other"]],["reference","Reference","text"],["remarks","Remarks","textarea"]]},
-income:{title:"Income",table:"income",key:"income",fields:[["source","Source","text",1],["amount","Amount","number",1],["received_on","Received on","date"],["remarks","Remarks","textarea"]]},
-card:{title:"Credit Card",table:"credit_cards",key:"cards",fields:[["card_name","Card name","text",1],["bank_name","Bank","text"],["card_number_last4","Last 4","text"],["credit_limit","Credit limit","number"],["outstanding","Outstanding","number"],["due_date","Due date","date"],["statement_date","Statement date","date"]]},
-emi:{title:"EMI",table:"emi_details",key:"emi",fields:[["bill_id","Linked bill","bill"],["lender","Lender","text"],["loan_name","Loan name","text",1],["emi_amount","EMI amount","number"],["total_emis","Total EMIs","number"],["paid_emis","Paid EMIs","number"],["next_due_date","Next due date","date"]]},
-reminder:{title:"Reminder",table:"reminders",key:"reminders",fields:[["bill_id","Bill","bill"],["reminder_date","Reminder date","date"],["reminder_days_before","Days before","number"],["enabled","Enabled","checkbox"]]}
-};
+function table(headers,rows){return rows.length?`<div class="tablewrap"><table class="table"><thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.join("")}</tbody></table></div>`:`<div class="empty">No records yet.</div>`}
+function actionBtns(table,id){return `<div style="display:flex;gap:5px"><button class="btn secondary small" onclick="editRecord('${table}','${id}')">Edit</button><button class="btn danger small" onclick="deleteRecord('${table}','${id}')">Delete</button></div>`}
+function renderBills(){
+ const q=($("billSearch")?.value||"").toLowerCase();
+ const rows=data.bills.filter(b=>[b.name,b.category,b.frequency,b.status].join(" ").toLowerCase().includes(q)).sort((a,b)=>(a.due_date||"").localeCompare(b.due_date||"")).map(b=>`<tr><td><b>${esc(b.name)}</b><div class="muted">${esc(b.remarks||"")}</div></td><td>${esc(b.category||"-")}</td><td>${esc(b.frequency||"-")}</td><td>${dateFmt(b.due_date)}</td><td>${money(b.amount)}</td><td>${money(b.paid_amount)}</td><td>${statusBadge(billStatus(b))}</td><td>${actionBtns("bills",b.id)}</td></tr>`);
+ $("billsTable").innerHTML=table(["Bill","Category","Frequency","Due","Amount","Paid","Status",""],rows)
+}
+$("billSearch").addEventListener("input",renderBills);
+
+function renderPayments(){const rows=[...data.payments].sort((a,b)=>(b.paid_on||"").localeCompare(a.paid_on||"")).map(p=>`<tr><td>${esc(p.bill_name||data.bills.find(b=>String(b.id)===String(p.bill_id))?.name||"-")}</td><td>${money(p.amount)}</td><td>${dateFmt(p.paid_on)}</td><td>${esc(p.payment_method||"-")}</td><td>${esc(p.reference||"-")}</td><td>${actionBtns("payments",p.id)}</td></tr>`);$("paymentsTable").innerHTML=table(["Bill","Amount","Paid on","Method","Reference",""],rows)}
+function renderIncome(){const rows=[...data.income].sort((a,b)=>(b.received_on||"").localeCompare(a.received_on||"")).map(x=>`<tr><td><b>${esc(x.source)}</b></td><td>${money(x.amount)}</td><td>${dateFmt(x.received_on)}</td><td>${esc(x.remarks||"-")}</td><td>${actionBtns("income",x.id)}</td></tr>`);$("incomeTable").innerHTML=table(["Source","Amount","Received","Remarks",""],rows)}
+function renderCards(){
+ $("cardsGrid").innerHTML=data.cards.length?data.cards.map(c=>{const limit=Number(c.credit_limit||0),used=Number(c.outstanding||0),pct=limit?Math.min(100,used/limit*100):0;return `<div class="card"><div class="row"><div><h3 style="margin:0">${esc(c.card_name)}</h3><div class="muted">${esc(c.bank_name||"")} ${c.card_number_last4?"•••• "+esc(c.card_number_last4):""}</div></div>${actionBtns("credit_cards",c.id)}</div><div style="height:18px"></div><div class="row"><div><div class="metric-label">Outstanding</div><div class="metric">${money(used)}</div></div><div style="text-align:right"><div class="metric-label">Limit</div><b>${money(limit)}</b></div></div><div style="height:10px"></div><div class="progress"><i style="width:${pct}%"></i></div><div class="row" style="margin-top:7px"><span class="muted">${pct.toFixed(0)}% used</span><span class="muted">Due ${dateFmt(c.due_date)}</span></div></div>`}).join(""):`<div class="card" style="grid-column:1/-1"><div class="empty">No credit cards yet. Add your first card.</div></div>`;
+}
+function renderEmi(){const rows=data.emi.map(e=>{const total=Number(e.total_emis||0),paid=Number(e.paid_emis||0),pct=total?Math.min(100,paid/total*100):0;return `<tr><td><b>${esc(e.loan_name||"-")}</b></td><td>${esc(e.lender||"-")}</td><td>${money(e.emi_amount)}</td><td>${paid}/${total||"-"} <div class="progress" style="margin-top:5px"><i style="width:${pct}%"></i></div></td><td>${dateFmt(e.next_due_date)}</td><td>${actionBtns("emi_details",e.id)}</td></tr>`});$("emiTable").innerHTML=table(["Loan","Lender","EMI","Progress","Next due",""],rows)}
+function renderReminders(){const rows=data.reminders.map(r=>{const b=data.bills.find(x=>String(x.id)===String(r.bill_id));return `<tr><td>${esc(b?.name||"General")}</td><td>${dateFmt(r.reminder_date)}</td><td>${esc(r.reminder_days_before??"-")}</td><td>${r.enabled===false?statusBadge("Disabled"):statusBadge("Paid").replace("Paid","Enabled")}</td><td>${actionBtns("reminders",r.id)}</td></tr>`});$("reminderTable").innerHTML=table(["Bill","Reminder date","Days before","Status",""],rows)}
+
+function renderCalendar(){
+ const d=calDate,first=new Date(d.getFullYear(),d.getMonth(),1),start=(first.getDay()+6)%7,days=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+ $("calTitle").textContent=monthName(d);
+ let out='<div class="calendar">'+["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(x=>`<div class="cal-head">${x}</div>`).join("");
+ for(let i=0;i<start;i++)out+='<div class="day"></div>';
+ for(let n=1;n<=days;n++){const date=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(n).padStart(2,"0")}`;const bills=data.bills.filter(b=>b.due_date===date);const emis=data.emi.filter(e=>e.next_due_date===date);out+=`<div class="day"><div class="daynum">${n}</div>${bills.map(b=>`<div class="event" title="${esc(b.name)}">${esc(b.name)} · ${money(b.amount)}</div>`).join("")}${emis.map(e=>`<div class="event" title="${esc(e.loan_name)}">EMI · ${esc(e.loan_name)}</div>`).join("")}</div>`}
+ out+="</div>";$("calendar").innerHTML=out;
+}
+function moveMonth(n){calDate=new Date(calDate.getFullYear(),calDate.getMonth()+n,1);renderCalendar()}
+
+function renderReports(){
+ const totalIncome=data.income.reduce((a,x)=>a+Number(x.amount||0),0), totalBills=data.bills.reduce((a,x)=>a+Number(x.amount||0),0), totalPaid=data.payments.reduce((a,x)=>a+Number(x.amount||0),0), outstanding=data.bills.reduce((a,x)=>a+Math.max(0,Number(x.amount||0)-Number(x.paid_amount||0)),0);
+ $("rIncome").textContent=money(totalIncome);$("rBills").textContent=money(totalBills);$("rPaid").textContent=money(totalPaid);$("rOutstanding").textContent=money(outstanding);
+ const cats={};data.bills.forEach(b=>{const k=b.category||"Other";cats[k]=(cats[k]||0)+Math.max(0,Number(b.amount||0)-Number(b.paid_amount||0))});const arr=Object.entries(cats).sort((a,b)=>b[1]-a[1]);const max=Math.max(...arr.map(x=>x[1]),1);
+ $("categoryReport").innerHTML=arr.length?arr.map(([k,v])=>`<div style="margin:11px 0"><div class="row"><span>${esc(k)}</span><b>${money(v)}</b></div><div class="progress" style="margin-top:6px"><i style="width:${v/max*100}%"></i></div></div>`).join(""):`<div class="empty">No category data yet.</div>`;
+ const statuses={Pending:0,Partial:0,Paid:0,Overdue:0};data.bills.forEach(b=>statuses[billStatus(b)]++);
+ $("statusReport").innerHTML=Object.entries(statuses).map(([k,v])=>`<div class="mini-item"><span>${statusBadge(k)}</span><b>${v}</b></div>`).join("");
+}
+
 function fieldHTML(f,val){
-const [n,l,t,req,opts]=f;
-if(t==="select")return `<label>${l}</label><select id="f_${n}">${opts.map(o=>`<option ${String(val||"")===o?"selected":""}>${o}</option>`).join("")}</select>`;
-if(t==="bill")return `<label>${l}</label><select id="f_${n}"><option value="">None</option>${data.bills.map(b=>`<option value="${b.id}" ${String(val||"")===String(b.id)?"selected":""}>${esc(b.name)}</option>`).join("")}</select>`;
-if(t==="checkbox")return `<label><input id="f_${n}" type="checkbox" style="width:auto" ${val!==false?"checked":""}> ${l}</label>`;
-return `<label>${l}</label>${t==="textarea"?`<textarea id="f_${n}">${esc(val||"")}</textarea>`:`<input id="f_${n}" type="${t}" value="${esc(val??"")}" ${req?"required":""}>`}`;
+ const [name,label,type,required,opts]=f;
+ if(type==="select")return `<label>${label}</label><select id="f_${name}">${opts.map(o=>`<option value="${esc(o)}" ${String(val??"")===o?"selected":""}>${esc(o)}</option>`).join("")}</select>`;
+ if(type==="bill")return `<label>${label}</label><select id="f_${name}"><option value="">None</option>${data.bills.map(b=>`<option value="${esc(b.id)}" ${String(val??"")===String(b.id)?"selected":""}>${esc(b.name)}</option>`).join("")}</select>`;
+ if(type==="checkbox")return `<label class="check"><input id="f_${name}" type="checkbox" ${val!==false?"checked":""}> ${label}</label>`;
+ return `<label>${label}</label>${type==="textarea"?`<textarea id="f_${name}">${esc(val??"")}</textarea>`:`<input id="f_${name}" type="${type}" value="${esc(val??"")}" ${required?"required":""}>`}`;
 }
 function openForm(kind,existing=null){
-const s=schema[kind];let body='<div class="formgrid">';
-s.fields.forEach(f=>body+=`<div>${fieldHTML(f,existing?.[f[0]])}</div>`);body+=`</div><div style="display:flex;gap:8px;margin-top:15px"><button id="saveForm">Save</button><button class="light" id="cancelForm">Cancel</button></div>`;
-openModal((existing?"Edit ":"Add ")+s.title,body);$("cancelForm").onclick=closeModal;$("saveForm").onclick=()=>saveForm(kind,existing?.id);
+ const s=schemas[kind];editing={kind,id:existing?.id||null};
+ let body='<div class="formgrid">';
+ s.fields.forEach(f=>body+=`<div>${fieldHTML(f,existing?.[f[0]])}</div>`);
+ body+=`</div><div style="display:flex;justify-content:flex-end;gap:8px;margin-top:17px"><button class="btn secondary" onclick="closeModal()">Cancel</button><button class="btn" id="saveBtn">Save</button></div>`;
+ openModal((existing?"Edit ":"Add ")+s.title,body);$("saveBtn").onclick=saveForm;
 }
 window.openForm=openForm;
-function findSchema(table){return Object.entries(schema).find(([k,s])=>s.table===table)}
-window.editRec=(table,id)=>{const [kind,s]=findSchema(table),r=data[s.key].find(x=>String(x.id)===String(id));openForm(kind,r)}
-window.delRec=async(table,id)=>{if(!confirm("Delete this record?"))return;const {error}=await client.from(table).delete().eq("id",id);if(error)alert(error.message);else loadAll()}
-async function saveForm(kind,id){
-const s=schema[kind],obj={};
-for(const f of s.fields){const [n,,t]=f,el=$("f_"+n);obj[n]=t==="checkbox"?el.checked:(el.value===""?null:(t==="number"?Number(el.value):el.value))}
-if((kind==="payment"||kind==="emi"||kind==="reminder")&&obj.bill_id){const b=data.bills.find(x=>String(x.id)===String(obj.bill_id));if(kind==="payment")obj.bill_name=b?.name||null}
-try{const res=id?await client.from(s.table).update(obj).eq("id",id):await client.from(s.table).insert(obj);if(res.error)throw res.error;closeModal();await loadAll();if(kind==="payment"&&obj.bill_id)await syncBill(obj)}catch(e){alert("Save failed: "+e.message)}
+function findSchema(table){return Object.entries(schemas).find(([,s])=>s.table===table)}
+window.editRecord=(table,id)=>{const found=findSchema(table);if(!found)return;const [kind,s]=found;const rec=data[s.key].find(x=>String(x.id)===String(id));openForm(kind,rec)}
+window.deleteRecord=async(table,id)=>{if(!confirm("Delete this record?"))return;const {error}=await client.from(table).delete().eq("id",id);if(error)alert(error.message);else await loadAll()}
+async function saveForm(){
+ const {kind,id}=editing,s=schemas[kind],obj={};
+ for(const f of s.fields){const [n,,t]=f,el=$("f_"+n);obj[n]=t==="checkbox"?el.checked:(el.value===""?null:(t==="number"?Number(el.value):el.value))}
+ if(kind==="payment"&&obj.bill_id){obj.bill_name=data.bills.find(b=>String(b.id)===String(obj.bill_id))?.name||null}
+ try{
+  let res;
+  if(id)res=await client.from(s.table).update(obj).eq("id",id);
+  else res=await client.from(s.table).insert(obj);
+  if(res.error)throw res.error;
+  if(kind==="payment"&&obj.bill_id&&!id)await updateBillAfterPayment(obj);
+  closeModal();await loadAll();
+ }catch(e){alert("Save failed: "+e.message)}
 }
-async function syncBill(p){const b=data.bills.find(x=>String(x.id)===String(p.bill_id));if(!b)return;const paid=Number(b.paid_amount||0)+Number(p.amount||0),amt=Number(b.amount||0),status=paid>=amt?"Paid":paid>0?"Partial":"Pending";const {error}=await client.from("bills").update({paid_amount:paid,status,paid_on:p.paid_on||null}).eq("id",b.id);if(error)alert("Payment saved but bill update failed: "+error.message);else loadAll()}
+async function updateBillAfterPayment(p){
+ const b=data.bills.find(x=>String(x.id)===String(p.bill_id));if(!b)return;
+ const paid=Number(b.paid_amount||0)+Number(p.amount||0),amt=Number(b.amount||0);
+ const status=paid>=amt&&amt>0?"Paid":paid>0?"Partial":"Pending";
+ const {error}=await client.from("bills").update({paid_amount:paid,status,paid_on:p.paid_on||null}).eq("id",b.id);
+ if(error)throw error;
+}
 
-document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.add("hidden"));$(b.dataset.tab).classList.remove("hidden");document.querySelectorAll("#tabs button").forEach(x=>x.classList.remove("active"));b.classList.add("active")});
-init();
+boot();
 </script>
-<div style="text-align:center;color:#6b7280;font-size:11px;padding:20px">MY FINANCE V8 • Supabase synced</div>
-</body></html>
+</body>
+</html>
